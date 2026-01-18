@@ -1,0 +1,136 @@
+# ============================================
+# BIM VISION PRO - BACKEND .gitignore
+# ============================================
+
+# ============================================
+# CRITICAL: API Keys & Environment Variables
+# ============================================
+# NEVER commit these files - they contain OpenAI API keys!
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+*.env
+
+# ============================================
+# Python
+# ============================================
+# Byte-compiled / optimized files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.pyc
+*.pyo
+*.pyd
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environments
+venv/
+ENV/
+env/
+.venv/
+env.bak/
+venv.bak/
+pythonenv*
+
+# ============================================
+# Project-Specific Backend Files
+# ============================================
+# Uploaded IFC files (contains user building data)
+uploads/
+uploads/*
+*.ifc
+
+# FastAPI / Uvicorn
+*.log
+logs/
+app.log
+uvicorn.log
+access.log
+error.log
+
+# Database files (if added later)
+*.db
+*.sqlite
+*.sqlite3
+instance/
+
+# ============================================
+# Testing & Coverage
+# ============================================
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.hypothesis/
+coverage.xml
+*.cover
+
+# ============================================
+# Type Checking & Linting
+# ============================================
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyre/
+.pytype/
+
+# ============================================
+# IDE & Editor Files
+# ============================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# ============================================
+# Jupyter Notebook (if used for testing)
+# ============================================
+.ipynb_checkpoints/
+*.ipynb
+
+# ============================================
+# Temporary & Cache Files
+# ============================================
+*.tmp
+*.temp
+*.bak
+*.backup
+.cache/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# ============================================
+# Security Files
+# ============================================
+*.pem
+*.key
+*.cert
+credentials.json
+secrets.json
