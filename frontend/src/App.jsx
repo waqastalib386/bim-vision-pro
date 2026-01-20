@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { FiActivity } from 'react-icons/fi';
 import FileUpload from './components/FileUpload';
@@ -12,6 +12,34 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState(null);
   const [error, setError] = useState(null);
+  const [backendStatus, setBackendStatus] = useState('checking'); // checking, online, offline
+  const [backendMessage, setBackendMessage] = useState('Connecting to server...');
+
+  // Wake up backend on app load (important for Render free tier)
+  useEffect(() => {
+    const wakeUpBackend = async () => {
+      try {
+        setBackendStatus('checking');
+        setBackendMessage('Waking up server... (this may take 30-60 seconds on first load)');
+
+        const response = await axios.get(`${API_BASE_URL}/`, {
+          timeout: 60000, // 60 second timeout for cold start
+        });
+
+        if (response.data.status === 'ok') {
+          setBackendStatus('online');
+          setBackendMessage('Server ready');
+          console.log('Backend is online:', response.data.message);
+        }
+      } catch (err) {
+        console.error('Backend health check failed:', err);
+        setBackendStatus('offline');
+        setBackendMessage('Server unavailable. Please refresh the page.');
+      }
+    };
+
+    wakeUpBackend();
+  }, []);
 
   const handleAnalyze = async (file) => {
     setLoading(true);
@@ -64,6 +92,25 @@ function App() {
 
   return (
     <div className="min-h-screen">
+      {/* Backend Warming Up Overlay */}
+      {backendStatus === 'checking' && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center">
+          <div className="glass-card p-8 max-w-md mx-4 text-center">
+            <div className="text-6xl mb-4 animate-bounce">🔍</div>
+            <h3 className="text-2xl font-bold mb-4 text-cyan-400">Starting BIM Vision Pro</h3>
+            <div className="mb-4">
+              <div className="w-full bg-gray-700 rounded-full h-2 overflow-hidden">
+                <div className="bg-gradient-to-r from-primary to-secondary h-full rounded-full animate-pulse w-3/4"></div>
+              </div>
+            </div>
+            <p className="text-gray-400 mb-2">{backendMessage}</p>
+            <p className="text-sm text-gray-500">
+              The server is starting up. This happens on first visit and takes about 30-60 seconds.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <header className="glass-card mx-4 mt-4 mb-8 border-cyan-500/30">
         <div className="container mx-auto px-6 py-4">
@@ -78,9 +125,25 @@ function App() {
               </div>
             </div>
             <div className="hidden md:block">
-              <div className="flex items-center gap-2 text-sm text-gray-400">
-                <div className="w-2 h-2 bg-cyan-500 rounded-full animate-pulse"></div>
-                <span>Server Connected</span>
+              <div className="flex items-center gap-2 text-sm">
+                {backendStatus === 'online' && (
+                  <>
+                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                    <span className="text-green-400">{backendMessage}</span>
+                  </>
+                )}
+                {backendStatus === 'checking' && (
+                  <>
+                    <div className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></div>
+                    <span className="text-yellow-400">{backendMessage}</span>
+                  </>
+                )}
+                {backendStatus === 'offline' && (
+                  <>
+                    <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                    <span className="text-red-400">{backendMessage}</span>
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -125,7 +188,12 @@ function App() {
 
             {/* File Upload Section */}
             {!results && (
-              <FileUpload onAnalyze={handleAnalyze} loading={loading} />
+              <FileUpload
+                onAnalyze={handleAnalyze}
+                loading={loading}
+                disabled={backendStatus !== 'online'}
+                backendStatus={backendStatus}
+              />
             )}
 
             {/* Results Display */}

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { FiUploadCloud, FiFile, FiX } from 'react-icons/fi';
 import LoadingSpinner from './LoadingSpinner';
 
-const FileUpload = ({ onAnalyze, loading }) => {
+const FileUpload = ({ onAnalyze, loading, disabled = false, backendStatus = 'online' }) => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [dragActive, setDragActive] = useState(false);
 
@@ -85,9 +85,10 @@ const FileUpload = ({ onAnalyze, loading }) => {
             </div>
             <button
               onClick={handleAnalyze}
-              className="btn-primary w-full mt-4"
+              disabled={disabled}
+              className="btn-primary w-full mt-4 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Analyze Building
+              {disabled ? 'Server Starting...' : 'Analyze Building'}
             </button>
           </div>
         ) : (
@@ -103,10 +104,21 @@ const FileUpload = ({ onAnalyze, loading }) => {
               onChange={handleFileChange}
               className="hidden"
               id="file-upload"
+              disabled={disabled}
             />
-            <label htmlFor="file-upload" className="btn-primary cursor-pointer inline-block">
-              Choose File
+            <label
+              htmlFor="file-upload"
+              className={`btn-primary inline-block ${
+                disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+              }`}
+            >
+              {disabled ? 'Server Starting...' : 'Choose File'}
             </label>
+            {disabled && backendStatus === 'checking' && (
+              <p className="text-sm text-yellow-400 mt-4">
+                ⏳ Please wait while the server starts up (first visit may take 30-60 seconds)
+              </p>
+            )}
           </div>
         )}
       </div>
