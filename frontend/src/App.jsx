@@ -49,11 +49,8 @@ function App() {
     formData.append('file', file);
 
     try {
-      const response = await axios.post(`${API_BASE_URL}/api/upload-ifc`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+      // Let browser automatically set Content-Type with boundary for multipart/form-data
+      const response = await axios.post(`${API_BASE_URL}/api/upload-ifc`, formData);
 
       setResults(response.data);
       setError(null);

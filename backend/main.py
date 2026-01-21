@@ -8,6 +8,7 @@ Backend server for analyzing IFC files using AI - BIM Vision Pro
 import os
 import shutil
 import time
+import traceback
 from pathlib import Path
 from typing import Dict, Any, Optional
 
@@ -27,11 +28,16 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# CORS middleware setup - sabhi origins se requests allow karo
-# CORS middleware - allow requests from all origins
+# CORS middleware setup - specific origins allow karo for production
+# CORS middleware - allow requests from specific origins for production
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Production mein specific origins use karein
+    allow_origins=[
+        "https://bimvisionpro.netlify.app",
+        "https://*.netlify.app",  # Allow all Netlify preview URLs
+        "http://localhost:3000",  # Vite dev server
+        "http://localhost:5173",  # Alternate Vite port
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -195,11 +201,16 @@ async def upload_ifc_file(
 
     except ValueError as ve:
         # API key error
+        print(f"[ERROR] ValueError in upload endpoint: {str(ve)}")
+        print(f"[ERROR] Traceback: {traceback.format_exc()}")
         raise HTTPException(status_code=400, detail=str(ve))
 
     except Exception as e:
-        # General error
-        print(f"[ERROR] Error: {str(e)}")
+        # General error - detailed logging for debugging
+        print(f"[ERROR] Exception in upload endpoint: {str(e)}")
+        print(f"[ERROR] Exception type: {type(e).__name__}")
+        print(f"[ERROR] File details - filename: {file.filename if file else 'N/A'}, content_type: {file.content_type if file else 'N/A'}")
+        print(f"[ERROR] Full traceback:\n{traceback.format_exc()}")
         raise HTTPException(
             status_code=500,
             detail=f"File processing mein error: {str(e)}"
