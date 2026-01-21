@@ -1,6 +1,5 @@
 """
-IFC Parser - IFC files ko parse karke building data nikalta hai
-Extracts building data from IFC files using ifcopenshell
+IFC Parser - Extracts building data from IFC files using ifcopenshell
 """
 
 import ifcopenshell
@@ -9,7 +8,6 @@ from typing import Dict, List, Optional, Any
 
 class IFCParser:
     """
-    IFC file ko parse karne ka main class
     Main class for parsing IFC files
     """
 
@@ -20,14 +18,13 @@ class IFCParser:
 
     def load_file(self, file_path: str) -> bool:
         """
-        IFC file ko load karta hai
         Loads the IFC file
 
         Args:
-            file_path: IFC file ka path
+            file_path: Path to IFC file
 
         Returns:
-            bool: Success ya failure
+            bool: Success or failure
         """
         try:
             self.file_path = file_path
@@ -36,11 +33,11 @@ class IFCParser:
             return True
         except Exception as e:
             print(f"[ERROR] Error loading IFC file: {str(e)}")
-            raise Exception(f"IFC file load nahi ho payi: {str(e)}")
+            raise Exception(f"Failed to load IFC file: {str(e)}")
 
     def get_project_info(self) -> Dict[str, str]:
         """
-        Project aur building ki basic information nikalta hai
+        Project aur building basic information extracts
         Extracts basic project and building information
 
         Returns:
@@ -78,7 +75,7 @@ class IFCParser:
 
     def count_elements(self) -> Dict[str, int]:
         """
-        Building elements ko count karta hai
+        Building elements the count does
         Counts building elements (walls, doors, windows, etc.)
 
         Returns:
@@ -111,7 +108,7 @@ class IFCParser:
 
     def get_materials(self) -> List[str]:
         """
-        Building mein use hue materials ki list nikalta hai
+        Building in use hue materials list extracts
         Extracts list of materials used in the building
 
         Returns:
@@ -125,7 +122,7 @@ class IFCParser:
                 if hasattr(material, 'Name') and material.Name:
                     materials.append(material.Name)
 
-            # Duplicate materials ko remove karo / Remove duplicates
+            # Duplicate materials the remove karo / Remove duplicates
             materials = list(set(materials))
 
             return materials if materials else ["No materials found"]
@@ -136,7 +133,7 @@ class IFCParser:
 
     def get_spaces(self) -> List[Dict[str, Any]]:
         """
-        Building ke rooms/spaces ki information nikalta hai
+        Building ke rooms/spaces information extracts
         Extracts room/space information
 
         Returns:
@@ -162,7 +159,7 @@ class IFCParser:
 
     def validate_ifc_file(self) -> Dict[str, Any]:
         """
-        IFC file ki validation karta hai aur errors detect karta hai
+        IFC file validation does aur errors detect does
         Validates IFC file and detects errors and missing elements
 
         Returns:
@@ -183,7 +180,7 @@ class IFCParser:
                 validation_results["warnings"].append({
                     "type": "Missing Project Name",
                     "location": "IfcProject",
-                    "message": "Project name missing hai. Ye mandatory information hai.",
+                    "message": "Project name missing is. Ye mandatory information is.",
                     "severity": "medium"
                 })
 
@@ -191,7 +188,7 @@ class IFCParser:
                 validation_results["warnings"].append({
                     "type": "Missing Building Name",
                     "location": "IfcBuilding",
-                    "message": "Building name set nahi hai.",
+                    "message": "Building name set nahi is.",
                     "severity": "low"
                 })
 
@@ -202,7 +199,7 @@ class IFCParser:
                 validation_results["errors"].append({
                     "type": "No Walls Found",
                     "location": "IfcWall elements",
-                    "message": "Building mein koi bhi wall nahi hai. Ye structural issue ho sakta hai.",
+                    "message": "Building in koi bhi wall nahi is. Ye structural issue ho sakta is.",
                     "severity": "high"
                 })
                 validation_results["is_valid"] = False
@@ -211,7 +208,7 @@ class IFCParser:
                 validation_results["warnings"].append({
                     "type": "No Slabs Found",
                     "location": "IfcSlab elements",
-                    "message": "Floor slabs nahi mile. Floors properly define nahi hain.",
+                    "message": "Floor slabs nahi mile. Floors properly define nahi are.",
                     "severity": "medium"
                 })
 
@@ -219,7 +216,7 @@ class IFCParser:
                 validation_results["warnings"].append({
                     "type": "No Doors Found",
                     "location": "IfcDoor elements",
-                    "message": "Building mein darwaze nahi hain. Entry/exit points missing hain.",
+                    "message": "Building in darwaze nahi are. Entry/exit points missing are.",
                     "severity": "medium"
                 })
 
@@ -227,7 +224,7 @@ class IFCParser:
                 validation_results["warnings"].append({
                     "type": "No Windows Found",
                     "location": "IfcWindow elements",
-                    "message": "Khidkiyan nahi hain. Natural light aur ventilation ke liye windows chahiye.",
+                    "message": "Khidkiyan nahi are. Natural light aur ventilation for windows should be.",
                     "severity": "low"
                 })
 
@@ -237,7 +234,7 @@ class IFCParser:
                 validation_results["errors"].append({
                     "type": "No Materials Defined",
                     "location": "IfcMaterial",
-                    "message": "Building materials define nahi hain. Cost estimation aur analysis ke liye materials zaruri hain.",
+                    "message": "Building materials define nahi are. Cost estimation aur analysis for materials zaruri are.",
                     "severity": "high"
                 })
                 validation_results["missing_elements"].append("Materials (IfcMaterial)")
@@ -248,7 +245,7 @@ class IFCParser:
                 validation_results["warnings"].append({
                     "type": "No Spaces Defined",
                     "location": "IfcSpace",
-                    "message": "Rooms/spaces define nahi hain. Space planning incomplete hai.",
+                    "message": "Rooms/spaces define nahi are. Space planning incomplete is.",
                     "severity": "medium"
                 })
 
@@ -257,19 +254,19 @@ class IFCParser:
                 validation_results["warnings"].append({
                     "type": "No Structural Elements",
                     "location": "IfcColumn, IfcBeam",
-                    "message": "Columns aur beams nahi hain. Structural framework incomplete lag raha hai.",
+                    "message": "Columns aur beams nahi are. Structural framework incomplete lag raha is.",
                     "severity": "medium"
                 })
 
             # Recommendations
             if len(validation_results["errors"]) > 0:
                 validation_results["recommendations"].append(
-                    "Critical errors hain. Pehle inhe fix karo before construction."
+                    "Critical errors are. Pehle inhe fix karo before construction."
                 )
 
             if len(validation_results["warnings"]) > 3:
                 validation_results["recommendations"].append(
-                    "Bahut saari warnings hain. IFC file ko review karo aur missing elements add karo."
+                    "Bahut saari warnings are. IFC file the review karo aur missing elements add karo."
                 )
 
             total_issues = len(validation_results["errors"]) + len(validation_results["warnings"])
@@ -295,7 +292,7 @@ class IFCParser:
 
     def calculate_costing(self) -> Dict[str, Any]:
         """
-        Building ki approximate costing calculate karta hai
+        Building approximate costing calculate does
         Calculates approximate building costing
 
         Returns:
@@ -350,7 +347,7 @@ class IFCParser:
                 "contingency": contingency,
                 "total_cost": total_cost,
                 "currency": "INR",
-                "note": "Ye approximate costing hai. Actual cost area, quality, aur location par depend karta hai.",
+                "note": "Ye approximate costing is. Actual cost area, quality, aur location par depend does.",
                 "rates_used": rates
             }
 
@@ -365,14 +362,14 @@ class IFCParser:
                 "contingency": 0,
                 "total_cost": 0,
                 "currency": "INR",
-                "note": f"Cost calculation mein error: {str(e)}",
+                "note": f"Cost calculation in error: {str(e)}",
                 "rates_used": {}
             }
 
     def extract_fast_summary(self) -> Dict[str, Any]:
         """
         Quick extraction - only essential data (FAST MODE)
-        Sirf zaruri data nikalta hai - bahut tez
+        Sirf zaruri data extracts - bahut tez
 
         Returns:
             Essential building data (counts only, no validation/costing)
@@ -398,7 +395,7 @@ class IFCParser:
 
     def extract_full_data(self) -> Dict[str, Any]:
         """
-        Saara building data ek saath nikalta hai
+        Saara building data ek saath extracts
         Extracts all building data together
 
         Returns:
@@ -428,7 +425,7 @@ class IFCParser:
             raise Exception(f"Data extraction failed: {str(e)}")
 
 
-# Testing ke liye / For testing
+# Testing for / For testing
 if __name__ == "__main__":
     parser = IFCParser()
     print("IFC Parser ready for use")

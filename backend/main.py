@@ -1,8 +1,7 @@
 """
 BIM Vision Pro - Main FastAPI Application
 See Your Buildings Differently
-IFC files ko analyze karne ke liye backend server with AI
-Backend server for analyzing IFC files using AI - BIM Vision Pro
+Backend server for analyzing IFC files using AI
 """
 
 import os
@@ -24,7 +23,7 @@ from supabase_service import SupabaseService
 from cache_service import cache_service
 
 
-# FastAPI app initialize karo / Initialize FastAPI app
+# Initialize FastAPI app
 app = FastAPI(
     title="BIM Vision Pro API",
     description="AI-powered building analysis platform - See Your Buildings Differently | IFC file analysis with intelligent insights",
@@ -64,7 +63,7 @@ async def add_performance_metrics(request: Request, call_next):
 
     return response
 
-# Upload folder ka path / Upload folder path
+# Upload folder path
 UPLOAD_FOLDER = Path("uploads")
 UPLOAD_FOLDER.mkdir(exist_ok=True)
 
@@ -84,7 +83,7 @@ except Exception as e:
 
 # Request/Response Models
 class QuestionRequest(BaseModel):
-    """Question request ka model"""
+    """Question request model"""
     question: str
     analysis_id: Optional[str] = None  # For linking Q&A to specific analysis
     user_id: Optional[str] = "anonymous"
@@ -101,8 +100,7 @@ class HealthResponse(BaseModel):
 @app.get("/", response_model=HealthResponse)
 async def health_check():
     """
-    Health check endpoint - server running hai ya nahi check karta hai
-    Checks if server is running
+    Health check endpoint - checks if server is running
     """
     return {
         "status": "ok",
@@ -124,7 +122,6 @@ async def get_cache_stats():
 @app.get("/api/test")
 async def test_ai_connection():
     """
-    OpenAI API connection ko test karta hai
     Tests OpenAI API connection
     """
     try:
@@ -152,7 +149,6 @@ async def upload_ifc_file(
     user_id: str = "anonymous"
 ):
     """
-    IFC file upload karta hai aur uska analysis return karta hai
     Uploads IFC file and returns its analysis
 
     Args:
@@ -167,14 +163,14 @@ async def upload_ifc_file(
     analysis_id = None
 
     try:
-        # File validation - IFC file hai ya nahi check karo
+        # File validation - check if IFC file
         if not file.filename.lower().endswith('.ifc'):
             raise HTTPException(
                 status_code=400,
-                detail="[ERROR] Sirf .ifc files allowed hain! / Only .ifc files are allowed!"
+                detail="[ERROR] Only .ifc files are allowed!"
             )
 
-        # File ko save karo aur size track karo / Save file and track size
+        # Save file and track size
         content = await file.read()
         file_size = len(content)
 
@@ -206,14 +202,14 @@ async def upload_ifc_file(
 
         print(f"[FILE] File uploaded: {file.filename} ({file_size} bytes)")
 
-        # IFC file parse karo / Parse IFC file
+        # Parse IFC file
         parser = IFCParser()
         parser.load_file(str(file_path))
 
-        # Building data extract karo / Extract building data
+        # Extract building data
         building_data = parser.extract_full_data()
 
-        # Claude AI se analysis le lo / Get analysis from OpenAI
+        # Get analysis from OpenAI
         claude_service = ClaudeService()
         analysis = claude_service.analyze_building(building_data)
 
@@ -242,13 +238,13 @@ async def upload_ifc_file(
                 print(f"[WARNING] Failed to store in Supabase: {str(db_error)}")
                 # Continue even if database storage fails
 
-        # Data ko store karo (session ke liye) / Store data for session
+        # Store data for session
         building_data_store["current"] = building_data
         building_data_store["current_analysis_id"] = analysis_id
 
         print(f"[OK] Analysis completed successfully in {processing_time:.2f}s")
 
-        # Response return karo / Return response
+        # Return response
         return {
             "status": "success",
             "message": "[OK] IFC file successfully analyzed!",
@@ -275,12 +271,12 @@ async def upload_ifc_file(
         print(f"[ERROR] Full traceback:\n{traceback.format_exc()}")
         raise HTTPException(
             status_code=500,
-            detail=f"File processing mein error: {str(e)}"
+            detail=f"Error processing file: {str(e)}"
         )
 
     finally:
         # File cleanup - optional
-        # Agar chahein toh file delete kar sakte hain
+        # Can delete file if desired
         # if file_path.exists():
         #     file_path.unlink()
         pass
@@ -289,7 +285,6 @@ async def upload_ifc_file(
 @app.post("/api/ask-question")
 async def ask_question(request: QuestionRequest):
     """
-    Building ke baare mein specific question ka answer deta hai
     Answers specific questions about the building
 
     Args:
@@ -299,18 +294,18 @@ async def ask_question(request: QuestionRequest):
         Answer from OpenAI
     """
     try:
-        # Check karo ki building data available hai ya nahi
+        # Check if building data is available
         if "current" not in building_data_store:
             raise HTTPException(
                 status_code=400,
-                detail="[ERROR] Pehle IFC file upload karein! / Please upload an IFC file first!"
+                detail="[ERROR] Please upload an IFC file first!"
             )
 
-        # Question validate karo / Validate question
+        # Validate question
         if not request.question or request.question.strip() == "":
             raise HTTPException(
                 status_code=400,
-                detail="[ERROR] Question khali nahi ho sakta! / Question cannot be empty!"
+                detail="[ERROR] Question cannot be empty!"
             )
 
         print(f"[?] Question received: {request.question}")
@@ -357,7 +352,7 @@ async def ask_question(request: QuestionRequest):
         print(f"[ERROR] Error answering question: {str(e)}")
         raise HTTPException(
             status_code=500,
-            detail=f"Question answer karne mein error: {str(e)}"
+            detail=f"Error answering question: {str(e)}"
         )
 
 
@@ -402,7 +397,7 @@ async def get_user_history(
         print(f"[ERROR] Failed to retrieve history: {str(e)}")
         raise HTTPException(
             status_code=500,
-            detail=f"History retrieve karne mein error: {str(e)}"
+            detail=f"Error retrieving history: {str(e)}"
         )
 
 
@@ -450,7 +445,7 @@ async def get_analysis(analysis_id: str):
         print(f"[ERROR] Failed to retrieve analysis: {str(e)}")
         raise HTTPException(
             status_code=500,
-            detail=f"Analysis retrieve karne mein error: {str(e)}"
+            detail=f"Error retrieving analysis: {str(e)}"
         )
 
 
@@ -492,7 +487,7 @@ async def delete_analysis(analysis_id: str):
         print(f"[ERROR] Failed to delete analysis: {str(e)}")
         raise HTTPException(
             status_code=500,
-            detail=f"Analysis delete karne mein error: {str(e)}"
+            detail=f"Error deleting analysis: {str(e)}"
         )
 
 
@@ -534,7 +529,7 @@ async def get_user_stats(user_id: str):
         print(f"[ERROR] Failed to retrieve statistics: {str(e)}")
         raise HTTPException(
             status_code=500,
-            detail=f"Statistics retrieve karne mein error: {str(e)}"
+            detail=f"Error retrieving statistics: {str(e)}"
         )
 
 

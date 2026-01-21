@@ -1,6 +1,5 @@
 """
-OpenAI Service - Building analysis ke liye OpenAI ka use karta hai
-Uses OpenAI for building analysis
+OpenAI Service - Uses OpenAI for building analysis
 """
 
 import os
@@ -9,32 +8,30 @@ from openai import OpenAI
 from dotenv import load_dotenv
 from cache_service import cache_service
 
-# Environment variables load karo / Load environment variables
+# Load environment variables
 load_dotenv()
 
 
 class ClaudeService:
     """
-    OpenAI ke saath interact karne ka class
     Class for interacting with OpenAI API
     """
 
     def __init__(self):
         """
-        OpenAI client ko initialize karta hai
         Initializes the OpenAI client with API key
         """
         api_key = os.getenv("OPENAI_API_KEY")
 
         if not api_key or api_key == "your_openai_api_key_here":
             raise ValueError(
-                "[ERROR] OPENAI_API_KEY .env file mein set nahi hai!\n"
+                "[ERROR] OPENAI_API_KEY is not set in .env file!\n"
                 "Please add your OpenAI API key in backend/.env file"
             )
 
         # OpenAI client setup
         self.client = OpenAI(api_key=api_key)
-        # Using gpt-4o-mini (free tier model) - fast and good quality
+        # Using gpt-4o-mini - fast and good quality
         # Other options: gpt-3.5-turbo (faster, lower quality)
         # Paid models: gpt-4, gpt-4-turbo (require API credits)
         self.model = "gpt-4o-mini"
@@ -42,7 +39,6 @@ class ClaudeService:
 
     def _create_analysis_prompt(self, building_data: Dict[str, Any]) -> str:
         """
-        Building data se detailed analysis prompt banata hai
         Creates detailed analysis prompt from building data
 
         Args:
@@ -57,8 +53,8 @@ class ClaudeService:
         spaces = building_data.get("spaces", [])
 
         prompt = f"""
-Aapko ek building ka BIM (Building Information Modeling) data diya gaya hai.
-Iska detailed analysis Hindi-English mix (Hinglish) mein provide karo.
+You are given BIM (Building Information Modeling) data for a building.
+Please provide a detailed analysis in English with professional insights.
 
 [INFO] PROJECT INFORMATION:
 - Project Name: {project_info.get('project_name', 'Unknown')}
@@ -66,14 +62,14 @@ Iska detailed analysis Hindi-English mix (Hinglish) mein provide karo.
 - Description: {project_info.get('description', 'N/A')}
 
 [BUILDING] BUILDING ELEMENTS COUNT:
-- Walls (Deewaren): {elements.get('walls', 0)}
-- Doors (Darwaze): {elements.get('doors', 0)}
-- Windows (Khidkiyan): {elements.get('windows', 0)}
-- Slabs (Floor Slabs): {elements.get('slabs', 0)}
-- Columns (Khambe): {elements.get('columns', 0)}
+- Walls: {elements.get('walls', 0)}
+- Doors: {elements.get('doors', 0)}
+- Windows: {elements.get('windows', 0)}
+- Slabs (Floors): {elements.get('slabs', 0)}
+- Columns: {elements.get('columns', 0)}
 - Beams: {elements.get('beams', 0)}
-- Stairs (Seedhiyan): {elements.get('stairs', 0)}
-- Roofs (Chhatein): {elements.get('roofs', 0)}
+- Stairs: {elements.get('stairs', 0)}
+- Roofs: {elements.get('roofs', 0)}
 - Total Elements: {elements.get('total', 0)}
 
 [MATERIALS] MATERIALS USED:
@@ -82,15 +78,15 @@ Iska detailed analysis Hindi-English mix (Hinglish) mein provide karo.
 [SPACES] SPACES/ROOMS:
 {len(spaces)} spaces found
 
-Kripya is building ka analysis Hinglish mein provide karo with following sections:
+Please provide a comprehensive building analysis with the following sections:
 
-1. **Building Overview** - Building ke baare mein summary
-2. **Structural Analysis** - Structural elements ka analysis
-3. **Space Analysis** - Rooms aur spaces ki details
-4. **Material Analysis** - Materials ke baare mein insights
-5. **Recommendations** - Improvement ke liye suggestions
+1. **Building Overview** - Summary of the building structure and key characteristics
+2. **Structural Analysis** - Analysis of structural elements and their distribution
+3. **Space Analysis** - Details about rooms, spaces, and spatial organization
+4. **Material Analysis** - Insights about materials used and recommendations
+5. **Recommendations** - Suggestions for improvements, potential issues, and best practices
 
-Response clear, detailed aur Hinglish mein hona chahiye!
+Response should be clear, detailed, and professional in English.
 """
         return prompt
 
@@ -157,15 +153,14 @@ Response clear, detailed aur Hinglish mein hona chahiye!
 
     def ask_question(self, building_data: Dict[str, Any], question: str) -> str:
         """
-        Building ke baare mein specific question ka answer deta hai
         Answers specific questions about the building
 
         Args:
             building_data: Complete building data dictionary
-            question: User ka question
+            question: User's question
 
         Returns:
-            Answer in Hinglish
+            Answer in English
         """
         try:
             project_info = building_data.get("project_info", {})
@@ -173,10 +168,10 @@ Response clear, detailed aur Hinglish mein hona chahiye!
             materials = building_data.get("materials", [])
             spaces = building_data.get("spaces", [])
 
-            # Question answering prompt / Question ka prompt banao
+            # Question answering prompt
             prompt = f"""
-Aapko ek building ka BIM data diya gaya hai aur user ne ek question pucha hai.
-Building ka data:
+You are given BIM data for a building and a user has asked a question.
+Building data:
 
 [INFO] Project: {project_info.get('project_name', 'Unknown')}
 [BUILDING] Building Elements:
@@ -194,12 +189,12 @@ Building ka data:
 
 [USER] USER QUESTION: {question}
 
-Kripya is question ka answer Hinglish (Hindi-English mix) mein detailed aur helpful tareeke se do.
-Agar data available nahi hai toh user ko clearly batao.
-Answer professional but friendly hona chahiye.
+Please answer this question in English with detailed and helpful information.
+If data is not available, clearly inform the user.
+Answer should be professional yet friendly.
 """
 
-            print(f"[AI] Question ka answer OpenAI se le rahe hain...")
+            print(f"[AI] Getting answer from OpenAI...")
 
             response = self.client.chat.completions.create(
                 model=self.model,
@@ -219,21 +214,21 @@ Answer professional but friendly hona chahiye.
             return answer
 
         except Exception as e:
-            error_msg = f"[ERROR] Question answer karne mein error: {str(e)}"
+            error_msg = f"[ERROR] Error answering question: {str(e)}"
             print(error_msg)
 
             # Provide helpful error messages based on error type
             if "does not exist" in str(e).lower():
-                return f"Error: Model '{self.model}' access issue.\n\nKripya check karein:\n1. API key valid hai\n2. Account credits available hain\n3. Model access hai\n\nVisit: platform.openai.com/usage"
+                return f"Error: Model '{self.model}' access issue.\n\nPlease check:\n1. API key is valid\n2. Account has available credits\n3. Model access is enabled\n\nVisit: platform.openai.com/usage"
             elif "api_key" in str(e).lower() or "authentication" in str(e).lower():
-                return "Error: API key invalid hai.\n\nKripya backend/.env file check karein."
+                return "Error: API key is invalid.\n\nPlease check backend/.env file."
             elif "rate_limit" in str(e).lower():
-                return "Error: Rate limit exceed ho gaya.\n\nThodi der wait karein."
+                return "Error: Rate limit exceeded.\n\nPlease wait a moment and try again."
             else:
-                return f"Error: {str(e)}\n\nKripya API key aur internet connection check karein.\nCredits check karein: platform.openai.com/usage"
+                return f"Error: {str(e)}\n\nPlease check API key and internet connection.\nCheck credits at: platform.openai.com/usage"
 
 
-# Testing ke liye / For testing
+# For testing
 if __name__ == "__main__":
     print("OpenAI Service module loaded successfully")
-    print("Note: API key .env file mein set karna zaruri hai")
+    print("Note: API key must be set in .env file")
