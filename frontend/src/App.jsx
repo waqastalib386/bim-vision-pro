@@ -99,12 +99,12 @@ function App() {
             <div className="text-6xl mb-4 animate-bounce">🔍</div>
             <h3 className="text-2xl font-bold mb-4 text-cyan-400">Starting BIM Vision Pro</h3>
             <div className="mb-4">
-              <div className="w-full bg-gray-700 rounded-full h-2 overflow-hidden">
-                <div className="bg-gradient-to-r from-primary to-secondary h-full rounded-full animate-pulse w-3/4"></div>
+              <div className="w-full bg-gray-700 rounded-full h-2">
+                <div className="bg-gradient-to-r from-blue-500 to-cyan-500 h-full rounded-full animate-pulse w-3/4"></div>
               </div>
             </div>
-            <p className="text-gray-400 mb-2">{backendMessage}</p>
-            <p className="text-sm text-gray-500">
+            <p className="text-gray-300 mb-2">{backendMessage}</p>
+            <p className="text-sm text-gray-400">
               The server is starting up. This happens on first visit and takes about 30-60 seconds.
             </p>
           </div>
@@ -112,16 +112,16 @@ function App() {
       )}
 
       {/* Header */}
-      <header className="glass-card mx-4 mt-4 mb-8 border-cyan-500/30">
+      <header className="glass-card mx-4 mt-4 mb-8">
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="text-4xl">🔍</div>
               <div>
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
                   BIM Vision Pro
                 </h1>
-                <p className="text-sm text-cyan-400">See Your Buildings Differently</p>
+                <p className="text-sm text-cyan-400">AI-Powered Building Analysis</p>
               </div>
             </div>
             <div className="hidden md:block">
@@ -134,7 +134,7 @@ function App() {
                 )}
                 {backendStatus === 'checking' && (
                   <>
-                    <div className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></div>
+                    <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
                     <span className="text-yellow-400">{backendMessage}</span>
                   </>
                 )}
@@ -159,10 +159,8 @@ function App() {
             {!results && !loading && (
               <div className="text-center mb-8">
                 <div className="text-6xl mb-4">🔍</div>
-                <h2 className="text-4xl md:text-6xl font-bold mb-4">
-                  <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-                    See Your Buildings Differently
-                  </span>
+                <h2 className="text-4xl md:text-6xl font-bold mb-4 bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
+                  See Your Buildings Differently
                 </h2>
                 <p className="text-xl text-cyan-300 mb-4">
                   AI-Powered Building Analysis Platform
@@ -248,13 +246,13 @@ function App() {
       </main>
 
       {/* Footer */}
-      <footer className="container mx-auto px-4 py-8 text-center border-t border-cyan-500/20 mt-12">
+      <footer className="container mx-auto px-4 py-8 text-center border-t border-slate-700/50 mt-12">
         <div className="mb-4">
           <div className="text-3xl mb-2">🔍</div>
-          <h3 className="text-lg font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+          <h3 className="text-lg font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
             BIM Vision Pro
           </h3>
-          <p className="text-sm text-cyan-400">See Your Buildings Differently</p>
+          <p className="text-sm text-cyan-400">AI-Powered Building Analysis</p>
         </div>
         <p className="text-gray-400 text-sm">
           Powered by AI | Built with React + FastAPI

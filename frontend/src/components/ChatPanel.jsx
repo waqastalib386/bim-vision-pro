@@ -77,7 +77,7 @@ const ChatPanel = ({ onAskQuestion, disabled }) => {
         }`}
       >
         {/* Header */}
-        <div className="p-4 border-b border-white/20 flex items-center justify-between">
+        <div className="p-4 border-b border-slate-700/50 flex items-center justify-between">
           <h3 className="text-xl font-bold text-white flex items-center gap-2">
             <FiMessageSquare />
             Ask About Building
@@ -118,7 +118,7 @@ const ChatPanel = ({ onAskQuestion, disabled }) => {
                 item.type === 'question'
                   ? 'ml-auto bg-blue-500/20 border-blue-500/30'
                   : item.type === 'error'
-                  ? 'bg-red-500/20 border-red-500/30'
+                  ? 'bg-red-500/20 border border-red-500/50'
                   : 'bg-white/10 border-white/20'
               } max-w-[85%] p-3 rounded-lg border`}
             >
@@ -152,7 +152,7 @@ const ChatPanel = ({ onAskQuestion, disabled }) => {
         </div>
 
         {/* Input Area */}
-        <div className="p-4 border-t border-white/20">
+        <div className="p-4 border-t border-slate-700/50">
           <div className="flex gap-2">
             <input
               type="text"

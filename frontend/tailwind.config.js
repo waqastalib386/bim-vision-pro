@@ -7,13 +7,9 @@ export default {
   theme: {
     extend: {
       colors: {
-        primary: '#2563EB',      // BIM Vision Pro Blue
-        secondary: '#06B6D4',    // BIM Vision Pro Cyan
-        accent: '#8B5CF6',       // BIM Vision Pro Purple
+        primary: '#3B82F6',
+        secondary: '#06B6D4',
       },
-      backdropBlur: {
-        xs: '2px',
-      }
     },
   },
   plugins: [],

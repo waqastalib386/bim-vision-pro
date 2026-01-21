@@ -55,7 +55,7 @@ const FileUpload = ({ onAnalyze, loading, disabled = false, backendStatus = 'onl
   return (
     <div className="w-full max-w-2xl mx-auto">
       <div
-        className={`glass-card p-8 transition-all duration-300 ${
+        className={`glass-card p-8 transition-all duration-200 ${
           dragActive ? 'border-blue-500 bg-blue-500/10' : ''
         }`}
         onDragEnter={handleDrag}

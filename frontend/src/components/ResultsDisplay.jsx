@@ -75,49 +75,49 @@ const ResultsDisplay = ({ results, onReset }) => {
 
       {/* Element Statistics Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="glass-card p-4 text-center hover:bg-white/15 transition-all">
+        <div className="glass-card p-4 text-center">
           <FiSquare className="text-4xl text-blue-400 mx-auto mb-2" />
           <div className="text-3xl font-bold text-white">{element_counts.walls}</div>
           <div className="text-sm text-gray-400">Walls</div>
         </div>
 
-        <div className="glass-card p-4 text-center hover:bg-white/15 transition-all">
+        <div className="glass-card p-4 text-center">
           <FiPackage className="text-4xl text-green-400 mx-auto mb-2" />
           <div className="text-3xl font-bold text-white">{element_counts.doors}</div>
           <div className="text-sm text-gray-400">Doors</div>
         </div>
 
-        <div className="glass-card p-4 text-center hover:bg-white/15 transition-all">
+        <div className="glass-card p-4 text-center">
           <FiSquare className="text-4xl text-cyan-400 mx-auto mb-2" />
           <div className="text-3xl font-bold text-white">{element_counts.windows}</div>
           <div className="text-sm text-gray-400">Windows</div>
         </div>
 
-        <div className="glass-card p-4 text-center hover:bg-white/15 transition-all">
+        <div className="glass-card p-4 text-center">
           <FiGrid className="text-4xl text-purple-400 mx-auto mb-2" />
           <div className="text-3xl font-bold text-white">{element_counts.slabs}</div>
           <div className="text-sm text-gray-400">Slabs</div>
         </div>
 
-        <div className="glass-card p-4 text-center hover:bg-white/15 transition-all">
+        <div className="glass-card p-4 text-center">
           <FiColumns className="text-4xl text-yellow-400 mx-auto mb-2" />
           <div className="text-3xl font-bold text-white">{element_counts.columns}</div>
           <div className="text-sm text-gray-400">Columns</div>
         </div>
 
-        <div className="glass-card p-4 text-center hover:bg-white/15 transition-all">
+        <div className="glass-card p-4 text-center">
           <FiLayers className="text-4xl text-orange-400 mx-auto mb-2" />
           <div className="text-3xl font-bold text-white">{element_counts.beams}</div>
           <div className="text-sm text-gray-400">Beams</div>
         </div>
 
-        <div className="glass-card p-4 text-center hover:bg-white/15 transition-all">
+        <div className="glass-card p-4 text-center">
           <FiStar className="text-4xl text-pink-400 mx-auto mb-2" />
           <div className="text-3xl font-bold text-white">{element_counts.stairs}</div>
           <div className="text-sm text-gray-400">Stairs</div>
         </div>
 
-        <div className="glass-card p-4 text-center hover:bg-white/15 transition-all">
+        <div className="glass-card p-4 text-center">
           <FiHome className="text-4xl text-red-400 mx-auto mb-2" />
           <div className="text-3xl font-bold text-white">{element_counts.roofs}</div>
           <div className="text-sm text-gray-400">Roofs</div>
