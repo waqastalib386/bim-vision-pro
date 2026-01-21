@@ -31,13 +31,13 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# CORS middleware setup - specific origins allow karo for production
-# CORS middleware - allow requests from specific origins for production
+# CORS middleware setup - allow Netlify and localhost origins
+# CORS middleware - allow requests from production and development
 app.add_middleware(
     CORSMiddleware,
+    allow_origin_regex=r"https://.*\.netlify\.app",  # Allows all Netlify subdomains
     allow_origins=[
-        "https://bimvisionpro.netlify.app",
-        "https://*.netlify.app",  # Allow all Netlify preview URLs
+        "https://bimvisionpro.netlify.app",  # Main production domain
         "http://localhost:3000",  # Vite dev server
         "http://localhost:5173",  # Alternate Vite port
     ],
