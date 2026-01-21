@@ -10,6 +10,15 @@ export default {
         primary: '#3B82F6',
         secondary: '#06B6D4',
       },
+      keyframes: {
+        shimmer: {
+          '0%': { transform: 'translateX(-100%)' },
+          '100%': { transform: 'translateX(100%)' },
+        },
+      },
+      animation: {
+        shimmer: 'shimmer 2s infinite',
+      },
     },
   },
   plugins: [],

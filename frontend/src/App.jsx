@@ -4,12 +4,15 @@ import { FiActivity } from 'react-icons/fi';
 import FileUpload from './components/FileUpload';
 import ResultsDisplay from './components/ResultsDisplay';
 import ChatPanel from './components/ChatPanel';
+import LoadingScreen from './components/LoadingScreen';
 
 // API URL - uses environment variable for production, falls back to localhost for development
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 function App() {
   const [loading, setLoading] = useState(false);
+  const [loadingStep, setLoadingStep] = useState(0); // 0 = not loading, 1-4 = steps
+  const [loadingProgress, setLoadingProgress] = useState(0); // 0-100
   const [results, setResults] = useState(null);
   const [error, setError] = useState(null);
   const [backendStatus, setBackendStatus] = useState('checking'); // checking, online, offline
@@ -44,16 +47,71 @@ function App() {
   const handleAnalyze = async (file) => {
     setLoading(true);
     setError(null);
+    setLoadingStep(1);
+    setLoadingProgress(10);
 
     const formData = new FormData();
     formData.append('file', file);
 
     try {
-      // Let browser automatically set Content-Type with boundary for multipart/form-data
-      const response = await axios.post(`${API_BASE_URL}/api/upload-ifc`, formData);
+      // Step 1: Uploading (10-30%)
+      setLoadingStep(1);
+      setLoadingProgress(20);
 
+      // Simulate upload progress
+      const uploadProgress = setInterval(() => {
+        setLoadingProgress(prev => Math.min(prev + 5, 30));
+      }, 200);
+
+      // Let browser automatically set Content-Type with boundary for multipart/form-data
+      const startTime = Date.now();
+      const response = await axios.post(`${API_BASE_URL}/api/upload-ifc`, formData, {
+        onUploadProgress: (progressEvent) => {
+          clearInterval(uploadProgress);
+          const percentCompleted = Math.round((progressEvent.loaded * 30) / progressEvent.total);
+          setLoadingProgress(percentCompleted);
+        }
+      });
+
+      clearInterval(uploadProgress);
+
+      // Step 2: Parsing (30-50%)
+      setLoadingStep(2);
+      setLoadingProgress(35);
+      await new Promise(resolve => setTimeout(resolve, 500));
+      setLoadingProgress(50);
+
+      // Step 3: AI Analysis (50-85%)
+      setLoadingStep(3);
+      setLoadingProgress(55);
+
+      // Simulate AI processing progress based on whether cached or not
+      const isCached = response.data.cached;
+      if (isCached) {
+        setLoadingProgress(85);
+      } else {
+        // Gradually increase progress during AI analysis
+        const aiProgress = setInterval(() => {
+          setLoadingProgress(prev => Math.min(prev + 3, 85));
+        }, 300);
+
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        clearInterval(aiProgress);
+      }
+
+      // Step 4: Finalizing (85-100%)
+      setLoadingStep(4);
+      setLoadingProgress(90);
+      await new Promise(resolve => setTimeout(resolve, 300));
+      setLoadingProgress(100);
+
+      // Show results
       setResults(response.data);
       setError(null);
+
+      // Log performance
+      const totalTime = (Date.now() - startTime) / 1000;
+      console.log(`Analysis completed in ${totalTime.toFixed(2)}s`, isCached ? '(cached)' : '');
     } catch (err) {
       console.error('Error analyzing file:', err);
       setError(
@@ -63,6 +121,8 @@ function App() {
       setResults(null);
     } finally {
       setLoading(false);
+      setLoadingStep(0);
+      setLoadingProgress(0);
     }
   };
 
@@ -181,8 +241,16 @@ function App() {
               </div>
             )}
 
+            {/* Loading Screen with Progress */}
+            {loading && (
+              <LoadingScreen
+                currentStep={loadingStep}
+                progress={loadingProgress}
+              />
+            )}
+
             {/* File Upload Section */}
-            {!results && (
+            {!results && !loading && (
               <FileUpload
                 onAnalyze={handleAnalyze}
                 loading={loading}
@@ -192,7 +260,7 @@ function App() {
             )}
 
             {/* Results Display */}
-            {results && (
+            {results && !loading && (
               <ResultsDisplay results={results} onReset={handleReset} />
             )}
 

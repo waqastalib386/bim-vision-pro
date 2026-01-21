@@ -9,16 +9,19 @@ import os
 import shutil
 import time
 import traceback
+import asyncio
+import httpx
 from pathlib import Path
 from typing import Dict, Any, Optional
 
-from fastapi import FastAPI, File, UploadFile, HTTPException, Form
+from fastapi import FastAPI, File, UploadFile, HTTPException, Form, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from ifc_parser import IFCParser
 from claude_service import ClaudeService
 from supabase_service import SupabaseService
+from cache_service import cache_service
 
 
 # FastAPI app initialize karo / Initialize FastAPI app
@@ -42,6 +45,24 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+# Performance monitoring middleware
+@app.middleware("http")
+async def add_performance_metrics(request: Request, call_next):
+    """Track request processing time for performance monitoring"""
+    start_time = time.time()
+    response = await call_next(request)
+    process_time = time.time() - start_time
+    response.headers["X-Process-Time"] = f"{process_time:.3f}s"
+
+    # Log slow requests
+    if process_time > 5.0:
+        print(f"[PERF] SLOW REQUEST: {request.url.path} took {process_time:.2f}s")
+    else:
+        print(f"[PERF] {request.url.path} processed in {process_time:.3f}s")
+
+    return response
 
 # Upload folder ka path / Upload folder path
 UPLOAD_FOLDER = Path("uploads")
@@ -86,6 +107,17 @@ async def health_check():
     return {
         "status": "ok",
         "message": "BIM Vision Pro API is running successfully! See Your Buildings Differently."
+    }
+
+
+@app.get("/api/cache-stats")
+async def get_cache_stats():
+    """
+    Get cache statistics for performance monitoring
+    """
+    return {
+        "status": "success",
+        "cache_stats": cache_service.get_cache_stats()
     }
 
 
@@ -143,10 +175,33 @@ async def upload_ifc_file(
             )
 
         # File ko save karo aur size track karo / Save file and track size
+        content = await file.read()
+        file_size = len(content)
+
+        # Check cache using file hash for super fast response
+        file_hash = cache_service.get_file_hash(content)
+        cached_data = cache_service.get_cached_file_data(file_hash)
+
+        if cached_data:
+            # File already processed - instant response!
+            print(f"[CACHE] File already processed! Returning cached results (instant)")
+            processing_time = time.time() - start_time
+
+            return {
+                "status": "success",
+                "message": "[OK] IFC file successfully analyzed (from cache)!",
+                "filename": file.filename,
+                "analysis_id": None,
+                "file_size": file_size,
+                "processing_time": processing_time,
+                "cached": True,
+                "building_data": cached_data["building_data"],
+                "analysis": cached_data["analysis"]
+            }
+
+        # New file - process it
         file_path = UPLOAD_FOLDER / file.filename
         with open(file_path, "wb") as buffer:
-            content = await file.read()
-            file_size = len(content)
             buffer.write(content)
 
         print(f"[FILE] File uploaded: {file.filename} ({file_size} bytes)")
@@ -161,6 +216,12 @@ async def upload_ifc_file(
         # Claude AI se analysis le lo / Get analysis from OpenAI
         claude_service = ClaudeService()
         analysis = claude_service.analyze_building(building_data)
+
+        # Cache the results for future requests
+        cache_service.cache_file_data(file_hash, {
+            "building_data": building_data,
+            "analysis": analysis
+        })
 
         # Calculate processing time
         processing_time = time.time() - start_time
@@ -195,6 +256,7 @@ async def upload_ifc_file(
             "analysis_id": analysis_id,
             "file_size": file_size,
             "processing_time": processing_time,
+            "cached": False,
             "building_data": building_data,
             "analysis": analysis
         }
@@ -474,6 +536,72 @@ async def get_user_stats(user_id: str):
             status_code=500,
             detail=f"Statistics retrieve karne mein error: {str(e)}"
         )
+
+
+# ============== KEEP-ALIVE MECHANISM ==============
+
+keep_alive_task = None
+
+
+async def keep_alive_ping():
+    """
+    Keep-alive mechanism to prevent Render cold starts
+    Pings itself every 10 minutes to keep server warm
+    """
+    # Wait 30 seconds before starting pings (let server fully start)
+    await asyncio.sleep(30)
+
+    print("[KEEP-ALIVE] Keep-alive mechanism started (ping every 10 minutes)")
+
+    while True:
+        try:
+            await asyncio.sleep(600)  # 10 minutes = 600 seconds
+
+            # Self-ping to keep server alive
+            async with httpx.AsyncClient() as client:
+                # Try to determine the deployment URL
+                deployment_url = os.getenv("RENDER_EXTERNAL_URL")
+                if deployment_url:
+                    url = f"{deployment_url}/"
+                else:
+                    url = "http://localhost:8000/"
+
+                response = await client.get(url, timeout=10.0)
+                if response.status_code == 200:
+                    print(f"[KEEP-ALIVE] Ping successful - server staying warm")
+                else:
+                    print(f"[KEEP-ALIVE] Ping returned status {response.status_code}")
+
+        except Exception as e:
+            print(f"[KEEP-ALIVE] Ping failed (this is normal on localhost): {str(e)}")
+
+
+@app.on_event("startup")
+async def startup_event():
+    """Start keep-alive task when server starts"""
+    global keep_alive_task
+
+    # Only enable keep-alive in production (Render)
+    if os.getenv("RENDER_EXTERNAL_URL"):
+        keep_alive_task = asyncio.create_task(keep_alive_ping())
+        print("[KEEP-ALIVE] Keep-alive enabled for production deployment")
+    else:
+        print("[INFO] Keep-alive disabled (local development)")
+
+    print("[STARTUP] Server startup complete")
+    print(f"[CACHE] Cache service ready: {cache_service.get_cache_stats()}")
+
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    """Cleanup on server shutdown"""
+    global keep_alive_task
+
+    if keep_alive_task:
+        keep_alive_task.cancel()
+        print("[KEEP-ALIVE] Keep-alive task cancelled")
+
+    print("[SHUTDOWN] Server shutting down")
 
 
 # ============== SERVER START ==============

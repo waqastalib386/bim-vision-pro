@@ -369,6 +369,33 @@ class IFCParser:
                 "rates_used": {}
             }
 
+    def extract_fast_summary(self) -> Dict[str, Any]:
+        """
+        Quick extraction - only essential data (FAST MODE)
+        Sirf zaruri data nikalta hai - bahut tez
+
+        Returns:
+            Essential building data (counts only, no validation/costing)
+        """
+        try:
+            if not self.ifc_file:
+                raise Exception("Pehle IFC file load karo / Load IFC file first")
+
+            # Only basic info and counts - very fast
+            fast_data = {
+                "project_info": self.get_project_info(),
+                "element_counts": self.count_elements(),
+                "file_path": self.file_path,
+                "mode": "fast_summary"
+            }
+
+            print("[OK] Fast summary extracted")
+            return fast_data
+
+        except Exception as e:
+            print(f"[ERROR] Error extracting fast summary: {str(e)}")
+            raise Exception(f"Fast data extraction failed: {str(e)}")
+
     def extract_full_data(self) -> Dict[str, Any]:
         """
         Saara building data ek saath nikalta hai
@@ -389,7 +416,8 @@ class IFCParser:
                 "spaces": self.get_spaces(),
                 "validation": self.validate_ifc_file(),
                 "costing": self.calculate_costing(),
-                "file_path": self.file_path
+                "file_path": self.file_path,
+                "mode": "full_analysis"
             }
 
             print("[OK] Successfully extracted all building data")

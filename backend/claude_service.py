@@ -7,6 +7,7 @@ import os
 from typing import Dict, Any
 from openai import OpenAI
 from dotenv import load_dotenv
+from cache_service import cache_service
 
 # Environment variables load karo / Load environment variables
 load_dotenv()
@@ -105,6 +106,14 @@ Response clear, detailed aur Hinglish mein hona chahiye!
             Analysis result in Hinglish
         """
         try:
+            # Check cache first for faster response
+            data_signature = cache_service.get_data_signature(building_data)
+            cached_analysis = cache_service.get_cached_analysis(data_signature)
+
+            if cached_analysis:
+                print("[AI] Using cached analysis (super fast!)")
+                return cached_analysis
+
             # Analysis prompt create karo / Create analysis prompt
             prompt = self._create_analysis_prompt(building_data)
 
@@ -120,11 +129,14 @@ Response clear, detailed aur Hinglish mein hona chahiye!
                     }
                 ],
                 max_tokens=4096,
-                temperature=0.7
+                temperature=0.5  # Lower temperature for faster, more consistent responses
             )
 
             # Response extract karo / Extract response
             analysis = response.choices[0].message.content
+
+            # Cache the analysis for future requests
+            cache_service.cache_analysis(data_signature, analysis)
 
             print("[OK] Building analysis successfully completed")
             return analysis
