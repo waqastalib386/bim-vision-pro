@@ -37,7 +37,6 @@ class IFCParser:
 
     def get_project_info(self) -> Dict[str, str]:
         """
-        Project aur building basic information extracts
         Extracts basic project and building information
 
         Returns:
@@ -75,7 +74,6 @@ class IFCParser:
 
     def count_elements(self) -> Dict[str, int]:
         """
-        Building elements the count does
         Counts building elements (walls, doors, windows, etc.)
 
         Returns:
@@ -108,7 +106,6 @@ class IFCParser:
 
     def get_materials(self) -> List[str]:
         """
-        Building in use hue materials list extracts
         Extracts list of materials used in the building
 
         Returns:
@@ -122,7 +119,7 @@ class IFCParser:
                 if hasattr(material, 'Name') and material.Name:
                     materials.append(material.Name)
 
-            # Duplicate materials the remove karo / Remove duplicates
+            # Remove duplicates
             materials = list(set(materials))
 
             return materials if materials else ["No materials found"]
@@ -133,7 +130,6 @@ class IFCParser:
 
     def get_spaces(self) -> List[Dict[str, Any]]:
         """
-        Building ke rooms/spaces information extracts
         Extracts room/space information
 
         Returns:
@@ -159,7 +155,6 @@ class IFCParser:
 
     def validate_ifc_file(self) -> Dict[str, Any]:
         """
-        IFC file validation does aur errors detect does
         Validates IFC file and detects errors and missing elements
 
         Returns:
@@ -180,7 +175,7 @@ class IFCParser:
                 validation_results["warnings"].append({
                     "type": "Missing Project Name",
                     "location": "IfcProject",
-                    "message": "Project name missing is. Ye mandatory information is.",
+                    "message": "Project name is missing. This is mandatory information.",
                     "severity": "medium"
                 })
 
@@ -188,7 +183,7 @@ class IFCParser:
                 validation_results["warnings"].append({
                     "type": "Missing Building Name",
                     "location": "IfcBuilding",
-                    "message": "Building name set nahi is.",
+                    "message": "Building name is not set.",
                     "severity": "low"
                 })
 
@@ -199,7 +194,7 @@ class IFCParser:
                 validation_results["errors"].append({
                     "type": "No Walls Found",
                     "location": "IfcWall elements",
-                    "message": "Building in koi bhi wall nahi is. Ye structural issue ho sakta is.",
+                    "message": "Building has no walls. This could be a structural issue.",
                     "severity": "high"
                 })
                 validation_results["is_valid"] = False
@@ -208,7 +203,7 @@ class IFCParser:
                 validation_results["warnings"].append({
                     "type": "No Slabs Found",
                     "location": "IfcSlab elements",
-                    "message": "Floor slabs nahi mile. Floors properly define nahi are.",
+                    "message": "No floor slabs found. Floors are not properly defined.",
                     "severity": "medium"
                 })
 
@@ -216,7 +211,7 @@ class IFCParser:
                 validation_results["warnings"].append({
                     "type": "No Doors Found",
                     "location": "IfcDoor elements",
-                    "message": "Building in darwaze nahi are. Entry/exit points missing are.",
+                    "message": "Building has no doors. Entry/exit points are missing.",
                     "severity": "medium"
                 })
 
@@ -224,7 +219,7 @@ class IFCParser:
                 validation_results["warnings"].append({
                     "type": "No Windows Found",
                     "location": "IfcWindow elements",
-                    "message": "Khidkiyan nahi are. Natural light aur ventilation for windows should be.",
+                    "message": "No windows found. Windows are needed for natural light and ventilation.",
                     "severity": "low"
                 })
 
@@ -234,7 +229,7 @@ class IFCParser:
                 validation_results["errors"].append({
                     "type": "No Materials Defined",
                     "location": "IfcMaterial",
-                    "message": "Building materials define nahi are. Cost estimation aur analysis for materials zaruri are.",
+                    "message": "Building materials are not defined. Materials are required for cost estimation and analysis.",
                     "severity": "high"
                 })
                 validation_results["missing_elements"].append("Materials (IfcMaterial)")
@@ -245,7 +240,7 @@ class IFCParser:
                 validation_results["warnings"].append({
                     "type": "No Spaces Defined",
                     "location": "IfcSpace",
-                    "message": "Rooms/spaces define nahi are. Space planning incomplete is.",
+                    "message": "Rooms/spaces are not defined. Space planning is incomplete.",
                     "severity": "medium"
                 })
 
@@ -254,19 +249,19 @@ class IFCParser:
                 validation_results["warnings"].append({
                     "type": "No Structural Elements",
                     "location": "IfcColumn, IfcBeam",
-                    "message": "Columns aur beams nahi are. Structural framework incomplete lag raha is.",
+                    "message": "No columns and beams found. Structural framework appears incomplete.",
                     "severity": "medium"
                 })
 
             # Recommendations
             if len(validation_results["errors"]) > 0:
                 validation_results["recommendations"].append(
-                    "Critical errors are. Pehle inhe fix karo before construction."
+                    "Critical errors found. Please fix these errors before construction."
                 )
 
             if len(validation_results["warnings"]) > 3:
                 validation_results["recommendations"].append(
-                    "Bahut saari warnings are. IFC file the review karo aur missing elements add karo."
+                    "Multiple warnings found. Please review the IFC file and add missing elements."
                 )
 
             total_issues = len(validation_results["errors"]) + len(validation_results["warnings"])
@@ -292,7 +287,6 @@ class IFCParser:
 
     def calculate_costing(self) -> Dict[str, Any]:
         """
-        Building approximate costing calculate does
         Calculates approximate building costing
 
         Returns:
@@ -347,7 +341,7 @@ class IFCParser:
                 "contingency": contingency,
                 "total_cost": total_cost,
                 "currency": "INR",
-                "note": "Ye approximate costing is. Actual cost area, quality, aur location par depend does.",
+                "note": "This is an approximate costing. Actual cost depends on area, quality, and location.",
                 "rates_used": rates
             }
 
@@ -369,14 +363,14 @@ class IFCParser:
     def extract_fast_summary(self) -> Dict[str, Any]:
         """
         Quick extraction - only essential data (FAST MODE)
-        Sirf zaruri data extracts - bahut tez
+        Extracts only essential data - very fast
 
         Returns:
             Essential building data (counts only, no validation/costing)
         """
         try:
             if not self.ifc_file:
-                raise Exception("Pehle IFC file load karo / Load IFC file first")
+                raise Exception("Please load IFC file first")
 
             # Only basic info and counts - very fast
             fast_data = {
@@ -395,7 +389,6 @@ class IFCParser:
 
     def extract_full_data(self) -> Dict[str, Any]:
         """
-        Saara building data ek saath extracts
         Extracts all building data together
 
         Returns:
@@ -403,7 +396,7 @@ class IFCParser:
         """
         try:
             if not self.ifc_file:
-                raise Exception("Pehle IFC file load karo / Load IFC file first")
+                raise Exception("Please load IFC file first")
 
             # Saara data collect karo / Collect all data
             full_data = {

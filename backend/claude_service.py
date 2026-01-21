@@ -92,14 +92,13 @@ Response should be clear, detailed, and professional in English.
 
     def analyze_building(self, building_data: Dict[str, Any]) -> str:
         """
-        Building data ko OpenAI se analyze karta hai
         Analyzes building data using OpenAI
 
         Args:
             building_data: Complete building data dictionary
 
         Returns:
-            Analysis result in Hinglish
+            Analysis result in English
         """
         try:
             # Check cache first for faster response
@@ -110,11 +109,11 @@ Response should be clear, detailed, and professional in English.
                 print("[AI] Using cached analysis (super fast!)")
                 return cached_analysis
 
-            # Analysis prompt create karo / Create analysis prompt
+            # Create analysis prompt
             prompt = self._create_analysis_prompt(building_data)
 
-            # OpenAI se analysis request karo / Request analysis from OpenAI
-            print("[AI] OpenAI se building analysis request kar rahe hain...")
+            # Request analysis from OpenAI
+            print("[AI] Requesting building analysis from OpenAI...")
 
             response = self.client.chat.completions.create(
                 model=self.model,
@@ -128,7 +127,7 @@ Response should be clear, detailed, and professional in English.
                 temperature=0.5  # Lower temperature for faster, more consistent responses
             )
 
-            # Response extract karo / Extract response
+            # Extract response
             analysis = response.choices[0].message.content
 
             # Cache the analysis for future requests
@@ -138,18 +137,18 @@ Response should be clear, detailed, and professional in English.
             return analysis
 
         except Exception as e:
-            error_msg = f"[ERROR] OpenAI analysis mein error: {str(e)}"
+            error_msg = f"[ERROR] Error in OpenAI analysis: {str(e)}"
             print(error_msg)
 
             # Provide helpful error messages based on error type
             if "does not exist" in str(e).lower():
-                return f"Error: Model '{self.model}' access issue.\n\nKripya check karein:\n1. API key sahi hai\n2. Account mein credits hain (check: platform.openai.com/usage)\n3. Model access available hai\n\nCurrent model: {self.model}"
+                return f"Error: Model '{self.model}' access issue.\n\nPlease check:\n1. API key is valid\n2. Account has credits (check: platform.openai.com/usage)\n3. Model access is available\n\nCurrent model: {self.model}"
             elif "api_key" in str(e).lower() or "authentication" in str(e).lower():
-                return "Error: API key invalid hai.\n\nKripya backend/.env file mein sahi OPENAI_API_KEY set karein."
+                return "Error: API key is invalid.\n\nPlease set correct OPENAI_API_KEY in backend/.env file."
             elif "rate_limit" in str(e).lower():
-                return "Error: Rate limit exceed ho gaya.\n\nKuch der wait karein aur phir try karein."
+                return "Error: Rate limit exceeded.\n\nPlease wait a moment and try again."
             else:
-                return f"Error in analysis: {str(e)}\n\nKripya check karein:\n1. API key sahi hai (backend/.env)\n2. Internet connection working hai\n3. OpenAI account mein credits hain (platform.openai.com/usage)"
+                return f"Error in analysis: {str(e)}\n\nPlease check:\n1. API key is correct (backend/.env)\n2. Internet connection is working\n3. OpenAI account has credits (platform.openai.com/usage)"
 
     def ask_question(self, building_data: Dict[str, Any], question: str) -> str:
         """
