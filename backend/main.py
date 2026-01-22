@@ -170,9 +170,21 @@ async def upload_ifc_file(
                 detail="[ERROR] Only .ifc files are allowed!"
             )
 
-        # Save file and track size
+        # Read file content
         content = await file.read()
         file_size = len(content)
+        file_size_mb = file_size / (1024 * 1024)
+
+        print(f"[FILE] Receiving file: {file.filename}")
+        print(f"[FILE] Size: {file_size_mb:.2f} MB")
+
+        # Check file size limit (500MB max)
+        MAX_FILE_SIZE = 500 * 1024 * 1024  # 500MB
+        if file_size > MAX_FILE_SIZE:
+            raise HTTPException(
+                status_code=413,
+                detail=f"[ERROR] File too large! Maximum size is 500MB. Your file is {file_size_mb:.2f} MB"
+            )
 
         # Check cache using file hash for super fast response
         file_hash = cache_service.get_file_hash(content)
@@ -541,34 +553,36 @@ keep_alive_task = None
 async def keep_alive_ping():
     """
     Keep-alive mechanism to prevent Render cold starts
-    Pings itself every 10 minutes to keep server warm
+    Pings itself every 8 minutes to keep server warm
     """
-    # Wait 30 seconds before starting pings (let server fully start)
-    await asyncio.sleep(30)
+    # Wait 60 seconds before starting pings (let server fully start)
+    await asyncio.sleep(60)
 
-    print("[KEEP-ALIVE] Keep-alive mechanism started (ping every 10 minutes)")
+    print("[KEEP-ALIVE] Keep-alive mechanism started (ping every 8 minutes)")
 
     while True:
         try:
-            await asyncio.sleep(600)  # 10 minutes = 600 seconds
+            await asyncio.sleep(480)  # 8 minutes = 480 seconds (before 10min timeout)
 
             # Self-ping to keep server alive
-            async with httpx.AsyncClient() as client:
+            async with httpx.AsyncClient(timeout=15.0) as client:
                 # Try to determine the deployment URL
                 deployment_url = os.getenv("RENDER_EXTERNAL_URL")
                 if deployment_url:
-                    url = f"{deployment_url}/"
+                    url = f"{deployment_url}/api/cache-stats"
+                    print(f"[KEEP-ALIVE] Pinging production server...")
+                    response = await client.get(url)
+                    if response.status_code == 200:
+                        print(f"[KEEP-ALIVE] ✅ Ping successful - server staying warm")
+                        cache_stats = response.json().get("cache_stats", {})
+                        print(f"[KEEP-ALIVE] Cache: {cache_stats}")
+                    else:
+                        print(f"[KEEP-ALIVE] ⚠️ Ping returned status {response.status_code}")
                 else:
-                    url = "http://localhost:8000/"
-
-                response = await client.get(url, timeout=10.0)
-                if response.status_code == 200:
-                    print(f"[KEEP-ALIVE] Ping successful - server staying warm")
-                else:
-                    print(f"[KEEP-ALIVE] Ping returned status {response.status_code}")
+                    print(f"[KEEP-ALIVE] ℹ️ Local development - skipping ping")
 
         except Exception as e:
-            print(f"[KEEP-ALIVE] Ping failed (this is normal on localhost): {str(e)}")
+            print(f"[KEEP-ALIVE] ⚠️ Ping failed: {str(e)}")
 
 
 @app.on_event("startup")
@@ -609,11 +623,16 @@ if __name__ == "__main__":
     print("=" * 60)
     print(">> Server: http://localhost:8000")
     print(">> API Docs: http://localhost:8000/docs")
+    print(">> Max file size: 500MB")
+    print(">> Timeout: 5 minutes")
     print("=" * 60)
 
     uvicorn.run(
         "main:app",
         host="0.0.0.0",
         port=8000,
-        reload=True  # Development mode - auto reload on code changes
+        reload=True,  # Development mode - auto reload on code changes
+        timeout_keep_alive=300,  # 5 minutes timeout for large files
+        limit_max_requests=1000,
+        limit_concurrency=50
     )

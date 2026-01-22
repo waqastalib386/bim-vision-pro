@@ -65,17 +65,31 @@ function App() {
 
       // Let browser automatically set Content-Type with boundary for multipart/form-data
       const startTime = Date.now();
+
+      // Log file size
+      const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
+      console.log(`📁 Uploading file: ${file.name} (${fileSizeMB} MB)`);
+
       const response = await axios.post(`${API_BASE_URL}/api/upload-ifc`, formData, {
         timeout: 600000, // 10 minutes timeout for large files
+        maxContentLength: 500 * 1024 * 1024, // 500MB max
+        maxBodyLength: 500 * 1024 * 1024, // 500MB max
         onUploadProgress: (progressEvent) => {
           clearInterval(uploadProgress);
           if (progressEvent.total) {
             // Calculate upload progress (0-30%)
             const percentCompleted = Math.round((progressEvent.loaded / progressEvent.total) * 30);
             setLoadingProgress(Math.min(percentCompleted, 30));
+
+            // Log upload progress for large files
+            if (file.size > 50 * 1024 * 1024 && percentCompleted % 10 === 0) {
+              console.log(`📤 Upload progress: ${percentCompleted}%`);
+            }
           }
         }
       });
+
+      console.log(`✅ Upload complete! Cached: ${response.data.cached}`);
 
       clearInterval(uploadProgress);
 

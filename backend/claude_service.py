@@ -123,8 +123,8 @@ Response should be clear, detailed, and professional in English.
                         "content": prompt
                     }
                 ],
-                max_tokens=4096,
-                temperature=0.5  # Lower temperature for faster, more consistent responses
+                max_tokens=2048,  # Reduced for faster processing
+                temperature=0.3  # Lower temperature for faster, more consistent responses
             )
 
             # Extract response
