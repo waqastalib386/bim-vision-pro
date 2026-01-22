@@ -66,10 +66,14 @@ function App() {
       // Let browser automatically set Content-Type with boundary for multipart/form-data
       const startTime = Date.now();
       const response = await axios.post(`${API_BASE_URL}/api/upload-ifc`, formData, {
+        timeout: 600000, // 10 minutes timeout for large files
         onUploadProgress: (progressEvent) => {
           clearInterval(uploadProgress);
-          const percentCompleted = Math.round((progressEvent.loaded * 30) / progressEvent.total);
-          setLoadingProgress(percentCompleted);
+          if (progressEvent.total) {
+            // Calculate upload progress (0-30%)
+            const percentCompleted = Math.round((progressEvent.loaded / progressEvent.total) * 30);
+            setLoadingProgress(Math.min(percentCompleted, 30));
+          }
         }
       });
 

@@ -8,28 +8,28 @@ const LoadingScreen = ({ currentStep = 0, progress = 0 }) => {
       id: 1,
       icon: <FiUploadCloud className="text-3xl" />,
       title: "Uploading File",
-      description: "File server pe upload ho rahi hai...",
+      description: "File is being uploaded to the server...",
       color: "blue"
     },
     {
       id: 2,
       icon: <FiFileText className="text-3xl" />,
       title: "Parsing IFC Structure",
-      description: "Building elements extract ho rahe hain...",
+      description: "Building elements are being extracted...",
       color: "green"
     },
     {
       id: 3,
       icon: <FiCpu className="text-3xl" />,
       title: "AI Analysis",
-      description: "Intelligent insights generate ho rahi hain...",
+      description: "Intelligent insights are being generated...",
       color: "purple"
     },
     {
       id: 4,
       icon: <FiCheckCircle className="text-3xl" />,
       title: "Finalizing Results",
-      description: "Results prepare ho rahe hain...",
+      description: "Results are being prepared...",
       color: "orange"
     }
   ];
